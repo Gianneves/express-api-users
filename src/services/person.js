@@ -1,4 +1,3 @@
-const { transaction } = require("../../test/integration/user.test")
 const person = require("../model/person")
 const user = require("../model/user")
 

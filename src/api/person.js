@@ -13,6 +13,7 @@ class ApiUser {
     }
 
     async FindById(req, res) {
+        console.log('findById: ' + req.session)
         try {
             const { id } = req.params
             const result = await servicePerson.FindById(id)

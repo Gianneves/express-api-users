@@ -1,7 +1,10 @@
 const user = require("../model/user")
 const jwt = require('jsonwebtoken')
+const bcrypt = require('bcrypt')
 
 const secretKey = "MinhaSenhaSecreta"
+const salt = 10
+
 class ServiceUser {
     async FindAll(transaction) {
         return user.findAll({ transaction })
@@ -19,8 +22,10 @@ class ServiceUser {
             throw new Error("Favor informar senha")
         }
 
+        const hashPass =  await bcrypt.hash(password, salt)
+
         return user.create({
-            email, password
+            email, password: hashPass
         }, { transaction })
     }
 
@@ -29,7 +34,7 @@ class ServiceUser {
         const oldUser = await this.FindById(id, transaction)
 
         oldUser.email = email || oldUser.email
-        oldUser.password = password || oldUser.password
+        oldUser.password = password ? await bcrypt.hash(password, salt) : oldUser.password
 
         oldUser.save({ transaction })
 
@@ -58,7 +63,9 @@ class ServiceUser {
             throw new Error("Email ou senha inválidos")
         }
 
-        if (password === currentUser.password) {
+        const verify = await bcrypt.compare(password, currentUser.password)
+
+        if (verify) {
             return jwt.sign({ id: currentUser.id }, secretKey, { expiresIn: 60 * 60 })
         }
 
